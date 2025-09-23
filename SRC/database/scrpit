@@ -1,0 +1,9 @@
+# Copy file SQL vào container
+docker cp database/init.sql cake_postgres_db_up_container:/docker-entrypoint-initdb.d/
+
+# Chạy file SQL
+docker exec -it cake_postgres_db_up_container psql -U cake_user_product_admin -d cake_up_db -f /docker-entrypoint-initdb.d/init.sql
+
+# Kiểm tra dữ liệu
+docker exec -it cake_postgres_db_up_container psql -U cake_user_product_admin -d cake_up_db -c "SELECT * FROM categories;"
+docker exec -it cake_postgres_db_up_container psql -U cake_user_product_admin -d cake_up_db -c "SELECT * FROM

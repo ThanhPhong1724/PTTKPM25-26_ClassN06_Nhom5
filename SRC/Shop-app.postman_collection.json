@@ -1,0 +1,521 @@
+{
+	"info": {
+		"_postman_id": "aefb7a3b-5e71-406d-b361-d5ac95fd0859",
+		"name": "Shop-app",
+		"description": "# 🚀 Get started here\n\nThis template guides you through CRUD operations (GET, POST, PUT, DELETE), variables, and tests.\n\n## 🔖 **How to use this template**\n\n#### **Step 1: Send requests**\n\nRESTful APIs allow you to perform CRUD operations using the POST, GET, PUT, and DELETE HTTP methods.\n\nThis collection contains each of these [request](https://learning.postman.com/docs/sending-requests/requests/) types. Open each request and click \"Send\" to see what happens.\n\n#### **Step 2: View responses**\n\nObserve the response tab for status code (200 OK), response time, and size.\n\n#### **Step 3: Send new Body data**\n\nUpdate or add new data in \"Body\" in the POST request. Typically, Body data is also used in PUT request.\n\n```\n{\n    \"name\": \"Add your name in the body\"\n}\n\n ```\n\n#### **Step 4: Update the variable**\n\nVariables enable you to store and reuse values in Postman. We have created a [variable](https://learning.postman.com/docs/sending-requests/variables/) called `base_url` with the sample request [https://postman-api-learner.glitch.me](https://postman-api-learner.glitch.me). Replace it with your API endpoint to customize this collection.\n\n#### **Step 5: Add tests in the \"Scripts\" tab**\n\nAdding tests to your requests can help you confirm that your API is working as expected. You can write test scripts in JavaScript and view the output in the \"Test Results\" tab.\n\n<img src=\"https://content.pstmn.io/fa30ea0a-373d-4545-a668-e7b283cca343/aW1hZ2UucG5n\" alt=\"\" height=\"1530\" width=\"2162\">\n\n## 💪 Pro tips\n\n- Use folders to group related requests and organize the collection.\n    \n- Add more [scripts](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/) to verify if the API works as expected and execute workflows.\n    \n\n## 💡Related templates\n\n[API testing basics](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9a37a28-055b-49cd-8c7e-97494a21eb54&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[API documentation](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9c28f47-1253-44af-a2f3-20dce4da1f18&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[Authorization methods](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=31a9a6ed-4cdf-4ced-984c-d12c9aec1c27&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "43666068"
+	},
+	"item": [
+		{
+			"name": "Đăng kí",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"testuser2@example.com\",\r\n    \"password\": \"password123\",\r\n    \"firstName\": \"Test\",\r\n    \"lastName\": \"User\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/api/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Đăng nhập",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"na@gmail.com\",\r\n    \"password\": \"123456\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/api/auth/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Lấy thông tin cá nhân ",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3R1c2VyMkBleGFtcGxlLmNvbSIsInN1YiI6ImMzNGU4MjI2LTFhNmItNGJhZC1iZjg3LTlhYTQ0ZWVjNTBmMCIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzQ4OTQ1MzQwLCJleHAiOjE3NDg5NDg5NDB9.RsA017nvb1sGdDi3fdYe-XvwhTImxBDeqi8JT7hWe8A\"",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/api/users/profile",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"users",
+						"profile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Tạo categoris",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3R1c2VyQGV4YW1wbGUuY29tIiwic3ViIjoiZDgzOWMzYmQtMzk3MC00MGYxLTk1ODItNjUwODkwZTkxNTc0IiwiaWF0IjoxNzQ2MzM5MzIxLCJleHAiOjE3NDYzNDI5MjF9.rne5zVI4aQYirEMcY5-_z5htZjNtIFohg-w21UAwYWI",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Quần Jeans\",\r\n    \"description\": \"Các loại quần jeans nam nữ\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/api/categories",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"categories"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Lấy tất cả danh mục",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/api/categories",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"categories"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Lấy danh mục theo id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/api/categories/b8d1c381-24d9-460b-93ca-781bdcfac3e9",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"categories",
+						"b8d1c381-24d9-460b-93ca-781bdcfac3e9"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Tạo sản phẩm",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3R1c2VyQGV4YW1wbGUuY29tIiwic3ViIjoiZDgzOWMzYmQtMzk3MC00MGYxLTk1ODItNjUwODkwZTkxNTc0IiwiaWF0IjoxNzQ2MzM5MzIxLCJleHAiOjE3NDYzNDI5MjF9.rne5zVI4aQYirEMcY5-_z5htZjNtIFohg-w21UAwYWI",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Quần Jeans Slimfit Xanh\",\r\n    \"description\": \"Quần jeans nam ống côn, màu xanh wash\",\r\n    \"price\": 450000,\r\n    \"stockQuantity\": 100,\r\n    \"categoryId\": \"b8d1c381-24d9-460b-93ca-781bdcfac3e9\" // <<< Thay ID category \"Quần Jeans\" đã tạo\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/api/products",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Lấy tất cả sản phẩm",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/api/products",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Lấy sản phầm theo id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/api/products/a3c738bb-80d5-4bb6-9f46-afcbf3e2d37e",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"products",
+						"a3c738bb-80d5-4bb6-9f46-afcbf3e2d37e"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Thêm sản phẩm vào giỏ hàng (demo userid cố định)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5hQGdtYWlsLmNvbSIsInN1YiI6IjdkMmEwYzkzLWRlMzctNDRlZC1hODRkLTVjMGMyZWY5MjU3YyIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzQ3Nzk1NTIxLCJleHAiOjE3NDc3OTkxMjF9.ZI_ciPhQZU6EBwZ13F2bkA67z2mceA1m9SHYZfrVGV4",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"productId\": \"4ad34712-cd92-43ab-98dc-5aa1ced12166\", // <<< Thay ID sản phẩm đã tạo\r\n    \"quantity\": 1\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/api/cart/items",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"cart",
+						"items"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Xem giỏ hàng userid cố định",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5hQGdtYWlsLmNvbSIsInN1YiI6IjdkMmEwYzkzLWRlMzctNDRlZC1hODRkLTVjMGMyZWY5MjU3YyIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzQ3Nzk1NTIxLCJleHAiOjE3NDc3OTkxMjF9.ZI_ciPhQZU6EBwZ13F2bkA67z2mceA1m9SHYZfrVGV4",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/api/cart/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"cart",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Order từ giỏ hàng",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5hQGdtYWlsLmNvbSIsInN1YiI6IjdkMmEwYzkzLWRlMzctNDRlZC1hODRkLTVjMGMyZWY5MjU3YyIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzQ3Nzk1NTIxLCJleHAiOjE3NDc3OTkxMjF9.ZI_ciPhQZU6EBwZ13F2bkA67z2mceA1m9SHYZfrVGV4",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"shippingAddress\": \"123 Đường ABC, Quận 1, TP.HCM\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/api/orders",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Lấy lịch sử đơn hàng",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5hQGdtYWlsLmNvbSIsInN1YiI6IjdkMmEwYzkzLWRlMzctNDRlZC1hODRkLTVjMGMyZWY5MjU3YyIsImlhdCI6MTc0NjUyMzQ5MywiZXhwIjoxNzQ2NTI3MDkzfQ.qcWVCXPUgRc7IM20DGW7p0s8RXRkP8QzLp0aSI-Cp_w",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/api/orders",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Thanh toán VNpay",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"orderId\": \"a970380f-bed6-4fbd-a768-b24acd6a4588\",  // <<< Thay ID đơn hàng vừa tạo\r\n    \"amount\": 900000, // <<< Số tiền đơn hàng (tính bằng VNĐ, ví dụ 2 quần jeans * 450k)\r\n    \"bankCode\": \"NCB\", // Mã ngân hàng tùy chọn hoặc bỏ trống\r\n    \"orderDescription\": \"Thanh toan don hang YOUR_ORDER_ID\",\r\n    \"language\": \"vn\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/api/payment/create_payment_url",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"payment",
+						"create_payment_url"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost/api/orders/c13b6ce3-a2ce-487c-ae27-ffd817ca6d54",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5hQGdtYWlsLmNvbSIsInN1YiI6IjdkMmEwYzkzLWRlMzctNDRlZC1hODRkLTVjMGMyZWY5MjU3YyIsImlhdCI6MTc0NjUyMzY5OSwiZXhwIjoxNzQ2NTI3Mjk5fQ.tAIGzCIk-C5DhhgZhodCJFHYGYoHmSW2mAjnr6ky1ZQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/api/orders/c13b6ce3-a2ce-487c-ae27-ffd817ca6d54",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"orders",
+						"c13b6ce3-a2ce-487c-ae27-ffd817ca6d54"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "testhhi",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5hQGdtYWlsLmNvbSIsInN1YiI6IjdkMmEwYzkzLWRlMzctNDRlZC1hODRkLTVjMGMyZWY5MjU3YyIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzQ3ODAyMzgxLCJleHAiOjE3NDc4MDU5ODF9.K9FtgOQaNDKYS6de6ZUzMLq8YMQTbMh5nVaMelCV2dE",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/api/orders/hihi",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"orders",
+						"hihi"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "id",
+			"value": "1"
+		},
+		{
+			"key": "base_url",
+			"value": "https://postman-rest-api-learner.glitch.me/"
+		}
+	]
+}
