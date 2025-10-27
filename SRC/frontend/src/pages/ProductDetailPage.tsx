@@ -3,7 +3,10 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getProductById, Product } from '../services/productApi';
 import { useCart } from '../contexts/CartContext';
-import { FiMinus, FiPlus, FiShoppingCart, FiHeart, FiShare2, FiTruck, FiShield, FiRepeat, FiTag } from 'react-icons/fi';
+import { FiMinus, FiPlus, FiShoppingCart, FiHeart, FiShare2, FiTruck, FiShield, FiRepeat, FiTag, FiUser } from 'react-icons/fi';
+import { getApprovedReviewsByProduct, createReview } from '../services/reviewApi';
+import { useAuth } from '../contexts/AuthContext';
+import { getOrders, getOrderDetails } from '../services/orderApi';
 
 // Cập nhật additionalInfo cho bánh ngọt
 const additionalInfo = {
@@ -36,6 +39,15 @@ const ProductDetailPage: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState('description');
+  // State cho tab đánh giá
+  const [reviews, setReviews] = useState<any[]>([]);
+
+  const [ratingStats, setRatingStats] = useState({ averageRating: 4.5, totalReviews: 2 });
+  const [reviewForm, setReviewForm] = useState({ rating: 0, comment: '' });
+  const { state } = useAuth();
+  const { isAuthenticated, user, token } = state;
+  const [canReview, setCanReview] = useState(true);
+
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -51,6 +63,24 @@ const ProductDetailPage: React.FC = () => {
     };
 
     fetchProduct();
+
+    const fetchReviews = async () => {
+    if (!id) return;
+    try {
+      const data = await getApprovedReviewsByProduct(id);
+      setReviews(data);
+      // Nếu muốn tính trung bình
+      if (data.length > 0) {
+        const avg = data.reduce((sum, r) => sum + (r.rating || 0), 0) / data.length;
+        setRatingStats({ averageRating: avg, totalReviews: data.length });
+      } else {
+        setRatingStats({ averageRating: 0, totalReviews: 0 });
+      }
+    } catch (err) {
+      console.error('Lỗi tải reviews:', err);
+    }
+  };
+  fetchReviews();
   }, [id]);
 
   const handleAddToCart = async () => {
@@ -62,7 +92,65 @@ const ProductDetailPage: React.FC = () => {
       alert(error instanceof Error ? error.message : 'Có lỗi xảy ra khi thêm vào giỏ hàng');
     }
   };
+  const handleSubmitReview = async () => {
+    try {
+      const token = localStorage.getItem('accessToken'); // đồng bộ tên biến token
+      if (!token) {
+        alert('Bạn cần đăng nhập để gửi đánh giá.');
+        return;
+      }
 
+      if (!reviewForm.rating) {
+        alert('Vui lòng chọn số sao.');
+        return;
+      }
+
+      // Lấy danh sách đơn hàng của user
+      const orders = await getOrders();
+
+      // Tìm đơn hàng có chứa sản phẩm hiện tại
+      let matchedOrderId: string | null = null;
+
+      for (const order of orders) {
+        // Lấy chi tiết order để có danh sách sản phẩm (items)
+        const detail = await getOrderDetails(order.id);
+        const hasProduct = detail.items.some(
+          (item) => item.productId === id // `id` là productId hiện tại
+        );
+
+        if (hasProduct) {
+          matchedOrderId = order.id;
+          break;
+        }
+      }
+
+      if (!matchedOrderId) {
+        alert('Bạn chỉ có thể đánh giá sản phẩm sau khi đã mua.');
+        return;
+      }
+
+      // Gửi review
+      await createReview(
+        {
+          productId: id!,
+          orderId: matchedOrderId,
+          rating: reviewForm.rating,
+          comment: reviewForm.comment,
+        },
+        token
+      );
+
+      alert('Gửi đánh giá thành công!');
+      setReviewForm({ rating: 0, comment: '' });
+
+      // Load lại danh sách review
+      const data = await getApprovedReviewsByProduct(id!);
+      setReviews(data);
+    } catch (err) {
+      console.error('Lỗi khi gửi review:', err);
+      alert('Có lỗi xảy ra khi gửi đánh giá.');
+    }
+  };
   const mockImages = [
     product?.img,
     // 'https://image.hm.com/assets/hm/e2/56/e256e588640ab0e04f5552c32fb343511c99beac.jpg?imwidth=1260',
@@ -242,7 +330,8 @@ const ProductDetailPage: React.FC = () => {
                   {[
                     { id: 'description', label: 'Mô tả' },
                     { id: 'specifications', label: 'Thông số' },
-                    { id: 'shipping', label: 'Vận chuyển' }
+                    { id: 'shipping', label: 'Vận chuyển' },
+                    { id: 'reviews', label: 'Đánh giá' },
                   ].map((tab) => (
                     <button
                       key={tab.id}
@@ -276,11 +365,10 @@ const ProductDetailPage: React.FC = () => {
                   >
                     {activeTab === 'description' && (
                       <div className="prose max-w-none">
+                        {/* ...existing mô tả code... */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                           <div>
-                            <h3 className="text-lg font-medium text-gray-900 mb-4">
-                              Điểm nổi bật
-                            </h3>
+                            <h3 className="text-lg font-medium text-gray-900 mb-4">Điểm nổi bật</h3>
                             <ul className="space-y-2">
                               {additionalInfo.highlights.map((highlight, idx) => (
                                 <li key={idx} className="flex items-center gap-2 text-gray-600">
@@ -291,17 +379,12 @@ const ProductDetailPage: React.FC = () => {
                             </ul>
                           </div>
                           <div>
-                            <h3 className="text-lg font-medium text-gray-900 mb-4">
-                              Mô tả chi tiết
-                            </h3>
-                            <p className="text-gray-600 leading-relaxed">
-                              {product.description || 'Chưa có mô tả chi tiết cho sản phẩm này.'}
-                            </p>
+                            <h3 className="text-lg font-medium text-gray-900 mb-4">Mô tả chi tiết</h3>
+                            <p className="text-gray-600 leading-relaxed">Chưa có mô tả chi tiết cho sản phẩm này.</p>
                           </div>
                         </div>
                       </div>
                     )}
-
                     {activeTab === 'specifications' && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {additionalInfo.specifications.map((spec, idx) => (
@@ -312,7 +395,6 @@ const ProductDetailPage: React.FC = () => {
                         ))}
                       </div>
                     )}
-
                     {activeTab === 'shipping' && (
                       <div className="space-y-4">
                         {additionalInfo.shipping.map((info, idx) => (
@@ -321,6 +403,90 @@ const ProductDetailPage: React.FC = () => {
                             <p className="text-gray-600">{info}</p>
                           </div>
                         ))}
+                      </div>
+                    )}
+                    {activeTab === 'reviews' && (
+                      <div className="mt-8">
+                        {/* Thống kê tổng quan */}
+                        <div className="bg-gray-50 rounded-xl p-6 mb-8">
+                          <div className="flex items-center gap-4">
+                            <div className="text-4xl font-bold text-purple-600">
+                              {ratingStats.averageRating.toFixed(1)}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-1">
+                                {[1,2,3,4,5].map(star => (
+                                  <span key={star} className={`w-6 h-6 inline-block ${star <= Math.round(ratingStats.averageRating) ? 'text-yellow-400' : 'text-gray-300'}`}>★</span>
+                                ))}
+                              </div>
+                              <p className="text-gray-600">{ratingStats.totalReviews} đánh giá</p>
+                            </div>
+                          </div>
+                        </div>
+                        {/* Danh sách đánh giá */}
+                        <div className="space-y-6 mb-8">
+                          {reviews.map(review => (
+                            <div key={review.id} className="border border-gray-200 rounded-xl p-6">
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <FiUser className="h-4 w-4 text-indigo-600" />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-gray-900">{review.user?.email || `User-${review.userId.substring(0, 8)}`}</p>
+                                    <div className="flex items-center gap-1">
+                                      {[1,2,3,4,5].map(star => (
+                                        <span key={star} className={`w-4 h-4 inline-block ${star <= review.rating ? 'text-yellow-400' : 'text-gray-300'}`}>★</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                                <span className="text-sm text-gray-500">{review.createdAt}</span>
+                              </div>
+                              {review.comment && (
+                                <p className="text-gray-700">{review.comment}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        {/* Form gửi đánh giá */}
+                        {isAuthenticated && canReview && (
+                          <div className="bg-white rounded-xl p-6 shadow">
+                            <h3 className="text-lg font-bold mb-4">Gửi đánh giá của bạn</h3>
+                            <div className="mb-4 flex items-center gap-2">
+                              <span className="text-gray-700">Chọn số sao:</span>
+                              {[1,2,3,4,5].map(star => (
+                                <button
+                                  key={star}
+                                  type="button"
+                                  className={`w-8 h-8 text-2xl ${reviewForm.rating >= star ? 'text-yellow-400' : 'text-gray-300'}`}
+                                  onClick={() => setReviewForm(f => ({ ...f, rating: star }))}
+                                >★</button>
+                              ))}
+                            </div>
+                            <textarea
+                              className="w-full border border-gray-200 rounded-lg p-2 mb-4"
+                              rows={3}
+                              placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."
+                              value={reviewForm.comment}
+                              onChange={e => setReviewForm(f => ({ ...f, comment: e.target.value }))}
+                            />
+                            <button
+                            type="button"
+                            className="bg-pink-500 text-white px-6 py-2 rounded-full font-medium"
+                            onClick={handleSubmitReview}
+                          >
+                            Gửi đánh giá
+                          </button>
+
+                          </div>
+                        )}
+                        {!isAuthenticated && (
+                          <div className="text-center text-gray-500">Bạn cần đăng nhập để gửi đánh giá.</div>
+                        )}
+                        {isAuthenticated && !canReview && (
+                          <div className="text-center text-gray-500">Chỉ khách đã mua sản phẩm mới được đánh giá.</div>
+                        )}
                       </div>
                     )}
                   </motion.div>

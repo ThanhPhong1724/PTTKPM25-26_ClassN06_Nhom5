@@ -7,6 +7,8 @@ import { motion } from 'framer-motion';
 import { FiMapPin, FiTruck, FiLock, FiCreditCard, FiShoppingBag, FiChevronRight } from 'react-icons/fi';
 import { createOrder } from '../services/orderApi';
 import { createPaymentUrl } from '../services/paymentApi';
+import { getUserProfile } from '../services/authApi';
+
 
 interface OrderItem {
   productId: string;
@@ -17,7 +19,11 @@ interface OrderItem {
 
 interface CreateOrderPayload {
   shippingAddress: string;
+  phone?: string;
   orderItems: OrderItem[]; // Changed from 'items' to 'orderItems'
+  deliveryDate?: string;
+  deliveryTimeSlot?: string;
+  deliveryNotes?: string;
 }
 
 const CheckoutPage: React.FC = () => {
@@ -27,6 +33,15 @@ const CheckoutPage: React.FC = () => {
 
   // State cho thông tin giao hàng
   const [shippingAddress, setShippingAddress] = useState<string>('');
+  const [userPhone, setUserPhone] = useState('');
+  
+  // State cho Ngày & Giờ Giao Hàng
+  const [deliveryDate, setDeliveryDate] = useState(
+    new Date().toISOString().split('T')[0]
+  );
+  const [deliveryTimeSlot, setDeliveryTimeSlot] = useState('');
+  const [deliveryNotes, setDeliveryNotes] = useState('');
+
   // State cho loading và error
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,13 +52,36 @@ const CheckoutPage: React.FC = () => {
       // Giả sử có thông tin địa chỉ trong user profile (cần cập nhật AuthContext)
       // setShippingAddress(authState.user.address || '');
       // Tạm thời để trống hoặc lấy từ đâu đó
-      setShippingAddress('123 Đường ABC, Quận 1, TP.HCM'); // Ví dụ
+      setShippingAddress('123 Đường ABC, Quận 1, TP.HCM - SĐT: 0123456789'); // Ví dụ
     }
   }, [authState.isAuthenticated, authState.user]);
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (authState.isAuthenticated) {
+        try {
+          const profile = await getUserProfile(); // Lấy thông tin đầy đủ
+          // Điền địa chỉ + số điện thoại vào cùng textbox
+            setShippingAddress(profile.address || '');
+            setUserPhone(profile.phone || '');
+        } catch (err) {
+          console.error('Lỗi khi lấy profile:', err);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [authState.isAuthenticated]);
 
   const calculateTotal = () => {
     return cartState.items.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
   };
+  
+  const timeSlots = [
+    { value: '08:00–10:00', label: 'Sáng sớm (08:00 - 10:00)' },
+    { value: '10:00–12:00', label: 'Buổi sáng (10:00 - 12:00)' },
+    { value: '13:00–15:00', label: 'Buổi chiều (13:00 - 15:00)' },
+    { value: '16:00–18:00', label: 'Buổi tối (16:00 - 18:00)' },
+  ];
 
   const handlePlaceOrder = async () => {
     if (!authState.isAuthenticated || !authState.token) {
@@ -93,7 +131,8 @@ const CheckoutPage: React.FC = () => {
 
       const orderPayload: CreateOrderPayload = {
         shippingAddress: shippingAddress.trim(),
-        orderItems: orderItems // Changed from 'items' to 'orderItems'
+        phone: userPhone.trim(),
+        orderItems: orderItems,
       };
 
       console.log('Sending order payload:', orderPayload);
@@ -155,13 +194,99 @@ const CheckoutPage: React.FC = () => {
                   </div>
                 </div>
 
-                <textarea
-                  value={shippingAddress}
-                  onChange={(e) => setShippingAddress(e.target.value)}
-                  placeholder="Ví dụ: 123 Đường ABC, Phường XYZ, Quận 1, TP.HCM"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                  rows={3}
-                />
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Địa chỉ
+                    </label>
+                    <textarea
+                      value={shippingAddress}
+                      onChange={(e) => setShippingAddress(e.target.value)}
+                      placeholder="Ví dụ: 123 Đường ABC, Phường XYZ, Quận 1, TP.HCM"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Số điện thoại
+                    </label>
+                    <input
+                      type="tel"
+                      value={userPhone}
+                      onChange={(e) => setUserPhone(e.target.value)}
+                      placeholder="Ví dụ: 0123456789"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              
+              {/* KHUNG CHỌN THỜI GIAN GIAO HÀNG ĐƯỢC CHÈN VÀO ĐÂY */}
+              <div className="bg-white rounded-2xl shadow-sm p-6">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                    <FiTruck className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Thời gian giao hàng
+                    </h2>
+                    <p className="text-sm text-gray-600">
+                      Chọn ngày, khung giờ và thêm ghi chú (nếu cần)
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Ngày giao hàng
+                    </label>
+                    <input
+                      type="date"
+                      value={deliveryDate}
+                      onChange={(e) => setDeliveryDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Khung giờ giao hàng
+                    </label>
+                    <select
+                      value={deliveryTimeSlot}
+                      onChange={(e) => setDeliveryTimeSlot(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      required
+                    >
+                      <option value="">Chọn khung giờ</option>
+                      {timeSlots.map((slot) => (
+                        <option key={slot.value} value={slot.value}>
+                          {slot.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ghi chú giao hàng
+                  </label>
+                  <textarea
+                    value={deliveryNotes}
+                    onChange={(e) => setDeliveryNotes(e.target.value)}
+                    rows={3}
+                    placeholder="Ví dụ: Giao sớm giúp mình nhé"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
               </div>
 
               <div className="lg:hidden">

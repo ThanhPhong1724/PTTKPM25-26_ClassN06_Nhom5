@@ -87,6 +87,7 @@ import AdminCategoryListPage from './pages/admin/AdminCategoryListPage';
 import AdminCategoryFormPage from './pages/admin/AdminCategoryFormPage';
 import AdminOrderListPage from './pages/admin/AdminOrderListPage';
 import AdminOrderDetailPage from './pages/admin/AdminOrderDetailPage';
+import AdminReviewListPage from './pages/admin/AdminReviewListPage';
 // ... (các import trang admin khác)
 
 const NotFoundPage = () => <h1>404 Not Found</h1>;
@@ -151,6 +152,8 @@ const App: React.FC = () => {
           <Route path="categories/edit/:categoryId" element={<AdminCategoryFormPage />} />
           <Route path="orders" element={<AdminOrderListPage />} />
           <Route path="orders/:orderId" element={<AdminOrderDetailPage />} />
+            {/* Review Management */}
+          <Route path="reviews" element={<AdminReviewListPage />} />
           <Route path="*" element={<NotFoundPage />} /> {/* 404 cho các route /admin/không_khớp */}
         </Route>
 

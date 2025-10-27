@@ -111,9 +111,29 @@ export class OrdersService {
     }
   }
 
+  private validateDeliveryDate(deliveryDate: Date): void {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (deliveryDate < today) {
+      throw new BadRequestException('Ngày giao hàng không được là ngày quá khứ');
+    }
+
+    // Giới hạn giao hàng trong 7 ngày tới
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 7);
+
+    if (deliveryDate > maxDate) {
+      throw new BadRequestException('Ngày giao hàng không được quá 7 ngày kể từ hôm nay');
+    }
+  }
   async createOrder(userId: string, createOrderDto: CreateOrderDto, userToken: string): Promise<Order> {
     this.logger.log(`Bắt đầu tạo đơn hàng cho user: ${userId}`);
-
+    // --- 0. KIỂM TRA NGÀY GIAO HÀNG (NẾU CÓ) ---
+    if (createOrderDto.deliveryDate) {
+      const deliveryDate = new Date(createOrderDto.deliveryDate);
+      this.validateDeliveryDate(deliveryDate);
+    }
     // --- 1. Lấy giỏ hàng từ cart-service ---
     let cart: CartInterface;
     try {
@@ -185,6 +205,10 @@ export class OrdersService {
       newOrder.totalAmount = totalAmount;
       newOrder.status = OrderStatus.PENDING; // Trạng thái chờ xử lý
       newOrder.shippingAddress = createOrderDto.shippingAddress ?? 'Default Address'; // Cung cấp giá trị mặc định nếu không có
+      newOrder.phone = createOrderDto.phone ?? null;
+      newOrder.deliveryDate = createOrderDto.deliveryDate ? new Date(createOrderDto.deliveryDate) : null;
+      newOrder.deliveryTimeSlot = createOrderDto.deliveryTimeSlot ?? null;
+      newOrder.deliveryNotes = createOrderDto.deliveryNotes ?? null;
       newOrder.items = orderItemsData.map(itemData => {
           const newItem = new OrderItem();
           Object.assign(newItem, itemData);
@@ -278,6 +302,7 @@ export class OrdersService {
         })) || [],
         createdAt: savedOrder.createdAt,
         shippingAddress: savedOrder.shippingAddress,
+        phone: savedOrder.phone, // Thêm trường phone
       };
 
       this.logger.log(`[${userId}] Chuẩn bị emit sự kiện đến queue '${targetQueue}' cho Order ID: ${savedOrder.id}`);

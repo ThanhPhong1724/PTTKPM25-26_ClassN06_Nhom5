@@ -1,5 +1,4 @@
-// src/users/dto/create-user.dto.ts
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength, Matches } from 'class-validator';
 
 export class CreateUserDto {
   @IsEmail({}, { message: 'Email không hợp lệ' })
@@ -12,10 +11,15 @@ export class CreateUserDto {
   password: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Tên không được để trống' }) // Có thể bỏ nếu cho phép null
+  @IsNotEmpty({ message: 'Tên không được để trống' })
   firstName: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Họ không được để trống' }) // Có thể bỏ nếu cho phép null
+  @IsNotEmpty({ message: 'Họ không được để trống' })
   lastName: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Số điện thoại không được để trống' })
+  @Matches(/^0\d{9,10}$/, { message: 'Số điện thoại không hợp lệ' }) // regex số điện thoại VN
+  phone: string;
 }

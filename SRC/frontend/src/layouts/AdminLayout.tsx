@@ -1,3 +1,4 @@
+// src/layouts/AdminLayout.tsx
 import React, { useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -10,9 +11,10 @@ import {
   MenuIcon,
   LogoutIcon,
   XIcon,
-  CogIcon, 
+  CogIcon,
   BellIcon,
-  SearchIcon
+  SearchIcon,
+  ChatAlt2Icon,
 } from '@heroicons/react/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -26,18 +28,26 @@ const Logo = () => (
 );
 
 const AdminLayout: React.FC = () => {
-  const { dispatch } = useAuth();
+  const { state, dispatch } = useAuth();
+  const { user } = state;
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+  // 🆕 thêm trang Review
   const navItems = [
     { path: '/admin/dashboard', name: 'Dashboard', icon: HomeIcon },
     { path: '/admin/users', name: 'Quản lý Users', icon: UsersIcon },
     { path: '/admin/products', name: 'Quản lý Products', icon: ShoppingBagIcon },
     { path: '/admin/categories', name: 'Quản lý Danh mục', icon: TagIcon },
     { path: '/admin/orders', name: 'Quản lý Đơn hàng', icon: ClipboardListIcon },
+    { path: '/admin/reviews', name: 'Quản lý Đánh giá', icon: ChatAlt2Icon },
   ];
+
+  const handleLogout = () => {
+    dispatch({ type: 'LOGOUT' });
+    navigate('/login');
+  };
 
   return (
     <div className="min-h-screen flex bg-gray-50/80">
@@ -55,7 +65,7 @@ const AdminLayout: React.FC = () => {
           `}
         >
           <div className="flex flex-col h-full">
-            {/* Logo section */}
+            {/* Logo */}
             <div className="flex items-center h-16 px-6 border-b">
               <Logo />
             </div>
@@ -63,41 +73,36 @@ const AdminLayout: React.FC = () => {
             {/* Navigation */}
             <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
               {navItems.map(({ path, name, icon: Icon }) => (
-                <motion.div
-                  key={path}
-                  whileHover={{ x: 4 }}
-                  whileTap={{ scale: 0.98 }}
-                >
+                <motion.div key={path} whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }}>
                   <Link
                     to={path}
                     className={`
                       flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200
-                      ${location.pathname === path 
-                        ? 'bg-indigo-50 text-indigo-600' 
+                      ${location.pathname === path
+                        ? 'bg-indigo-50 text-indigo-600'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-indigo-600'}
                     `}
                   >
-                    <Icon className={`h-5 w-5 ${
-                      location.pathname === path ? 'text-indigo-600' : 'text-gray-400'
-                    }`} />
+                    <Icon
+                      className={`h-5 w-5 ${
+                        location.pathname === path ? 'text-indigo-600' : 'text-gray-400'
+                      }`}
+                    />
                     <span className="font-medium text-sm">{name}</span>
                   </Link>
                 </motion.div>
               ))}
             </nav>
 
-            {/* Logout Button */}
+            {/* Logout */}
             <div className="p-4 border-t">
               <motion.button
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                onClick={() => {
-                  dispatch({ type: 'LOGOUT' });
-                  navigate('/login');
-                }}
+                onClick={handleLogout}
                 className="flex items-center w-full px-4 py-2 space-x-3 rounded-lg
                   text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
-                  data-testid="admin-logout-button"
+                data-testid="admin-logout-button"
               >
                 <LogoutIcon className="h-5 w-5" />
                 <span className="font-medium text-sm">Đăng xuất</span>
@@ -107,9 +112,9 @@ const AdminLayout: React.FC = () => {
         </motion.aside>
       </AnimatePresence>
 
-      {/* Main Content Area */}
+      {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Navigation Bar */}
+        {/* Topbar */}
         <header className="sticky top-0 z-40 bg-white/80 border-b backdrop-blur-sm">
           <div className="flex items-center justify-between h-16 px-4">
             {/* Left side */}
@@ -137,7 +142,7 @@ const AdminLayout: React.FC = () => {
                 </AnimatePresence>
               </motion.button>
 
-              {/* Search Bar */}
+              {/* Search */}
               <div className="hidden md:flex items-center">
                 <div className="relative">
                   <input
@@ -160,7 +165,7 @@ const AdminLayout: React.FC = () => {
                 <BellIcon className="h-5 w-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
                 <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
               </motion.button>
-              
+
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -169,23 +174,19 @@ const AdminLayout: React.FC = () => {
                 <CogIcon className="h-5 w-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
               </motion.button>
 
-              {/* Admin Avatar */}
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="relative group"
-              >
-                <button className="flex items-center space-x-1">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
-                    <span className="text-sm font-medium text-indigo-600">A</span>
-                  </div>
-                </button>
+              {/* Avatar */}
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
+                  <span className="text-sm font-medium text-indigo-600">
+                    {user?.email?.[0]?.toUpperCase() || 'A'}
+                  </span>
+                </div>
               </motion.div>
             </div>
           </div>
         </header>
 
-        {/* Main Content */}
+        {/* Page Outlet */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50/80">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

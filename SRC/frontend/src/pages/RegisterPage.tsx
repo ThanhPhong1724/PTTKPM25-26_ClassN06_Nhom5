@@ -11,6 +11,7 @@ const RegisterPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [phone, setPhone] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -20,14 +21,13 @@ const RegisterPage: React.FC = () => {
     setLoading(true);
 
     try {
-      await registerUser({ email, password, firstName, lastName });
+      await registerUser({ email, password, firstName, lastName, phone });
       setSuccess(true);
-      // Tùy chọn: Tự động chuyển đến trang đăng nhập sau vài giây
       setTimeout(() => {
         navigate('/login');
-      }, 2000); // Chuyển sau 2 giây
+      }, 2000);
     } catch (err: any) {
-      setError(err.message || 'Đăng ký thất bại. Email có thể đã tồn tại.');
+      setError(err.message || 'Đăng ký thất bại. Email hoặc số điện thoại có thể đã tồn tại.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -149,6 +149,24 @@ const RegisterPage: React.FC = () => {
                     placeholder="••••••••"
                   />
                 </div>
+
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                    Số điện thoại
+                  </label>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    required
+                    pattern="^[0-9]{9,15}$" // Chỉ cho phép số, dài 9-15 chữ số
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-primary focus:border-brand-primary sm:text-sm"
+                    placeholder="0912345678"
+                  />
+                </div>
+
               </div>
 
               {error && (

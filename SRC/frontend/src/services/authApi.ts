@@ -27,6 +27,7 @@ interface RegisterData {
     password: string;
     firstName: string;
     lastName: string;
+    phone: string;
   }
   
   // Định nghĩa kiểu trả về của API register (thường là thông tin user đã tạo)
@@ -35,6 +36,7 @@ interface RegisterData {
     email: string;
     firstName: string;
     lastName: string;
+    phone: string;
     // ...
   }
 

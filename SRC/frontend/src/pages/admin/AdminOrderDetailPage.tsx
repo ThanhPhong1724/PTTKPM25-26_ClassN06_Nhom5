@@ -1,5 +1,7 @@
 // src/pages/admin/AdminOrderDetailPage.tsx
 import React, { useState, useEffect, useCallback } from 'react';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -492,6 +494,64 @@ const AdminOrderDetailPage: React.FC = () => {
               </div>
             )}
           </motion.div>
+
+          {/* Delivery Info (Ngày & Giờ giao hàng) */}
+          {(order.deliveryDate || order.deliveryTimeSlot || order.deliveryNotes) && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.25 }}
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+            >
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="p-2 bg-teal-100 rounded-lg">
+                  <FiTruck className="w-5 h-5 text-teal-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">Thông tin giao hàng</h3>
+              </div>
+
+              <div className="space-y-4">
+                {/* Ngày giao hàng */}
+                {order.deliveryDate && (
+                  <div className="flex items-start gap-3">
+                    <FiCalendar className="w-5 h-5 text-gray-400 mt-1" />
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Ngày giao hàng</p>
+                      <p className="text-gray-900 font-medium">
+                        {format(new Date(order.deliveryDate), 'dd/MM/yyyy', { locale: vi })}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Khung giờ giao hàng */}
+                {order.deliveryTimeSlot && (
+                  <div className="flex items-start gap-3">
+                    <FiClock className="w-5 h-5 text-gray-400 mt-1" />
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Khung giờ giao hàng</p>
+                      <p className="text-gray-900 font-medium">
+                        {order.deliveryTimeSlot}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Ghi chú giao hàng */}
+                {order.deliveryNotes && (
+                  <div className="flex items-start gap-3">
+                    <FiTruck className="w-5 h-5 text-gray-400 mt-1" />
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Ghi chú giao hàng</p>
+                      <p className="text-gray-900 font-medium whitespace-pre-line">
+                        {order.deliveryNotes}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
 
           {/* Order Timeline */}
           <motion.div

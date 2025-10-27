@@ -43,7 +43,7 @@ const TermsPage: React.FC = () => {
             Điều Khoản Dịch Vụ
           </h1>
           <p className="text-gray-600">
-            Cập nhật lần cuối: 12/05/2025
+            Cập nhật lần cuối: 12/10/2025
           </p>
         </motion.div>
 

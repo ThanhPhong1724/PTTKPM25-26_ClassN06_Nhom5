@@ -10,6 +10,14 @@ export enum OrderStatus {
   FAILED = 'failed',         // Thanh toán thất bại
 }
 
+// Các khung giờ giao hàng cố định
+export enum DeliveryTimeSlot {
+  MORNING = '08:00–10:00',
+  LATE_MORNING = '10:00–12:00',
+  AFTERNOON = '13:00–15:00',
+  EVENING = '16:00–18:00',
+}
+
 @Entity('orders')
 export class Order {
   @PrimaryGeneratedColumn('uuid')
@@ -38,6 +46,25 @@ export class Order {
   // Có thể thêm các trường khác: địa chỉ giao hàng, ghi chú...
   @Column({ nullable: true })
   shippingAddress: string;
+
+  // Thêm số điện thoại người nhận
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  phone?: string | null; // nullable, cho phép null
+
+  // Thêm ngày giao hàng (chỉ lưu ngày)
+  @Column({ type: 'date', nullable: true })
+  deliveryDate: Date | null;
+
+  // Thêm khung giờ giao hàng
+  @Column({
+    type: 'enum',
+    enum: DeliveryTimeSlot,
+    nullable: true,
+  })
+  deliveryTimeSlot: DeliveryTimeSlot | null;
+
+  @Column({ type: 'text', nullable: true })
+  deliveryNotes: string | null;
 
   @CreateDateColumn()
   createdAt: Date;

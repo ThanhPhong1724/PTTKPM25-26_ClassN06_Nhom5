@@ -6,7 +6,7 @@ import { getCategories, Category } from '../services/categoryApi';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { FiSearch, FiFilter, FiShoppingBag, FiHeart } from 'react-icons/fi';
-import { GiCakeSlice } from 'react-icons/gi';
+import { GiCakeSlice, GiSparkles } from 'react-icons/gi';
 import './../assets/styles/HomePage.css';
 
 // Thêm interfaces cho các options
@@ -39,6 +39,7 @@ const ProductListPage: React.FC = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [showFilters, setShowFilters] = useState(false);
+  const [isBuilderOpen, setIsBuilderOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {

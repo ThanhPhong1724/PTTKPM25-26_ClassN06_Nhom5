@@ -25,13 +25,12 @@ interface PaymentPayload {
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
   private readonly mailFrom: string;
-  private readonly defaultRecipient = 'yasuaola@gmail.com'; // <<< Email mặc định để test
+  private readonly defaultRecipient = 'daleomaue@gmail.com'; // <<< Email mặc định để test
 
   constructor(
     private readonly mailerService: MailerService,
     private readonly configService: ConfigService,
   ) {
-this.logger.log('!!! NotificationsService constructor CALLED !!!');
     this.logger.log('!!! NotificationsService constructor CALLED !!!');
     this.mailFrom = this.configService.get<string>('MAIL_FROM', 'noreply@example.com');
   }
@@ -98,8 +97,8 @@ this.logger.log('!!! NotificationsService constructor CALLED !!!');
       });
       this.logger.log(`[payment.successful] Đã gửi email thành công cho đơn hàng ${payload.orderId}`);
     } catch (error) {
-      this.logger.error(`[payment.successful] Lỗi gửi email cho đơn hàng ${payload.orderId}:`, error);
-      throw error;
+      this.logger.error(`[FATAL MAIL ERROR] ==> FAILED to send email for order ${payload.orderId}.`, error.stack);
+      this.logger.error(`[FATAL MAIL ERROR] ==> SMTP CONFIG CHECK: Host=${this.configService.get('MAIL_HOST')}, Port=${this.configService.get('MAIL_PORT')}, User=${this.configService.get('MAIL_USER')}`);
     }
   }
 

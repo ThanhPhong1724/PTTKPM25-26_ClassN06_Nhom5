@@ -20,4 +20,5 @@ declare module '@heroicons/react/outline' {
   export const ArrowRightIcon: React.FC<IconProps>;
   export const ArrowLeftIcon: React.FC<IconProps>;
   export const TrashIcon: React.FC<IconProps>;
+  export const ChatAlt2Icon: React.FC<IconProps>;
 }

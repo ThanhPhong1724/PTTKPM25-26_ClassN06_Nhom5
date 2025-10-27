@@ -10,6 +10,10 @@ interface CreateOrderPayload {
     quantity: number;
     price: number;
   }>;
+  // Thêm các trường mới cho chức năng "Chọn Ngày & Giờ Giao Hàng"
+  deliveryDate?: string;        // YYYY-MM-DD
+  deliveryTimeSlot?: string;    // Ví dụ: "10:00–12:00"
+  deliveryNotes?: string;       // Ghi chú khi giao
 }
 
 export enum OrderStatusApi { // Đặt tên khác để tránh trùng với OrderStatus của backend nếu cần
@@ -44,19 +48,14 @@ export interface OrderData {
     lastName?: string;
   };
   // adminNotes?: string; // Nếu admin có thể thêm ghi chú
+  // Chọn ngày giờ giao hàng
+  deliveryDate?: string | null;
+  deliveryTimeSlot?: string | null;
+  deliveryNotes?: string | null;
 }
 // Interface cho dữ liệu order trả về từ backend
 // Nên import từ file interface chung nếu có
-interface OrderResponse {
-  id: string;
-  userId: string;
-  status: string; // Hoặc dùng enum OrderStatus
-  totalAmount: number;
-  items: { productId: string; quantity: number; price: number; name: string }[];
-  shippingAddress: string | null;
-  createdAt: string | Date;
-  updatedAt: string | Date;
-}
+export interface OrderResponse extends OrderData {}
 
 export const createOrder = async (payload: CreateOrderPayload): Promise<OrderResponse> => {
   try {
@@ -121,6 +120,10 @@ export interface OrderDetail {
   shippingAddress: string;
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
+  //
+  deliveryDate?: string | null;
+  deliveryTimeSlot?: string | null;
+  deliveryNotes?: string | null;
 }
 
 export const getOrderDetails = async (orderId: string): Promise<OrderDetail> => {
@@ -130,9 +133,11 @@ export const getOrderDetails = async (orderId: string): Promise<OrderDetail> => 
   } catch (error) {
     console.error(`Error fetching order details for orderId ${orderId}:`, error);
     // Ném lỗi để component có thể bắt và xử lý
-    if (axios.isAxiosError(error) && error.response && error.response.data) {
-      throw error.response.data;
-    }
+    if (axios.isAxiosError(error) && error.response) {
+    const { status, data } = error.response;
+    const serverMsg = data?.message || `Lỗi ${status}: Không thể tải đơn hàng`;
+    throw new Error(serverMsg);
+  }
     throw error;
   }
 };
@@ -145,6 +150,9 @@ export interface OrderListItem {
   createdAt: string;
   shippingAddress: string;
   itemCount: number;
+
+  deliveryDate?: string | null;
+  deliveryTimeSlot?: string | null;
 }
 
 // Thêm hàm lấy danh sách đơn hàng
@@ -220,6 +228,10 @@ export const getOrderByIdForAdmin = async (orderId: string): Promise<OrderData> 
 export interface UpdateOrderAdminPayload {
   shippingAddress?: string;
   status?: OrderStatusApi;
+
+  deliveryDate?: string;
+  deliveryTimeSlot?: string;
+  deliveryNotes?: string;
 }
 
 /**
