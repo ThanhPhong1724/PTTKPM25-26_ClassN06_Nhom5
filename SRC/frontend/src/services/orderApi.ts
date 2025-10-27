@@ -25,7 +25,7 @@ export interface OrderItemData {
   productName: string;
   quantity: number;
   price: number;
-  imageUrl?: string | null; // Thêm nếu có
+  productImg?: string | null; // Ảnh sản phẩm tại thời điểm đặt hàng
 }
 
 // Interface này nên khớp với dữ liệu mà backend API /orders/admin/all và /orders/admin/:id trả về
@@ -36,6 +36,8 @@ export interface OrderData {
   totalAmount: number;
   items: OrderItemData[];
   shippingAddress: string | null;
+  deliveryDate?: string | Date;
+  deliveryTimeSlot?: string;
   createdAt: string | Date;
   updatedAt: string | Date;
   user?: { // Thông tin user (nếu backend API admin có join và trả về)
@@ -108,7 +110,7 @@ export interface OrderItem {
   price: string; // Giữ dạng string như API trả về, sẽ format sau
   productName: string;
   orderId: string;
-  productImage?: string | null; // Thêm trường này
+  productImg?: string | null; // Ảnh sản phẩm tại thời điểm đặt hàng
 }
 
 // Định nghĩa kiểu dữ liệu cho chi tiết đơn hàng
@@ -119,6 +121,8 @@ export interface OrderDetail {
   totalAmount: string; // Giữ dạng string, sẽ format sau
   items: OrderItem[];
   shippingAddress: string;
+  deliveryDate?: string; // ISO date string (YYYY-MM-DD)
+  deliveryTimeSlot?: string;
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
 }

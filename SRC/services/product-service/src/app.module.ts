@@ -5,8 +5,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { CakeOptionsModule } from './cake-options/cake-options.module';
 import { Category } from './categories/entities/category.entity'; // Import entity
 import { Product } from './products/entities/product.entity';     // Import entity
+import { Review } from './reviews/entities/review.entity';        // Import entity
+import { CakeOption } from './cake-options/entities/cake-option.entity'; // Import entity
 import * as redisStore from 'cache-manager-redis-store'; // Import redis store
 import { AuthModule } from './auth/auth.module'; // <<< IMPORT AUTHMODULE MỚI TẠO
 
@@ -22,16 +26,23 @@ import { AuthModule } from './auth/auth.module'; // <<< IMPORT AUTHMODULE MỚI 
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
+        type: 'postgres' as const,
         host: configService.get<string>('DATABASE_HOST')!,
-        port: parseInt(configService.get<string>('DATABASE_PORT', '5432')!, 10), // Mặc định 5432 nếu không có trong env
+        port: parseInt(configService.get<string>('DATABASE_PORT', '5432')!, 10),
         username: configService.get<string>('DATABASE_USER')!,
         password: configService.get<string>('DATABASE_PASSWORD')!,
         database: configService.get<string>('DATABASE_NAME')!,
-        entities: [Category, Product], // <<< THÊM ENTITIES MỚI VÀO ĐÂY
-        synchronize: true, // Giữ true cho development
+        entities: [Category, Product, Review, CakeOption],
+        synchronize: true,
         autoLoadEntities: true,
         logging: true,
+        // Force UTF-8 encoding for PostgreSQL
+        options: {
+          'client_encoding': 'UTF8',
+        },
+        extra: {
+          options: '-c client_encoding=UTF8',
+        },
       }),
     }),
 
@@ -52,6 +63,8 @@ import { AuthModule } from './auth/auth.module'; // <<< IMPORT AUTHMODULE MỚI 
     AuthModule,
     CategoriesModule,
     ProductsModule,
+    ReviewsModule,
+    CakeOptionsModule,
   ],
   controllers: [],
   providers: [],

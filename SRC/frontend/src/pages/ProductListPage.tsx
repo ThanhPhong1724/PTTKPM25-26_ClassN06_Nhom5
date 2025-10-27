@@ -88,6 +88,10 @@ const ProductListPage: React.FC = () => {
   const getFilteredAndSortedProducts = () => {
     let filtered = [...products];
 
+    // Loại bỏ "Bánh Tùy Chỉnh" khỏi danh sách (chỉ dùng cho custom cake builder)
+    const CUSTOM_CAKE_PRODUCT_ID = '35537564-76ef-47c0-83b0-1115a1c4505c';
+    filtered = filtered.filter(product => product.id !== CUSTOM_CAKE_PRODUCT_ID);
+
     // Lọc theo tên
     if (searchTerm) {
       filtered = filtered.filter(product => 

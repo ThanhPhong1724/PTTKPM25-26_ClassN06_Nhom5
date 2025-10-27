@@ -3,7 +3,8 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiShoppingBag, FiMinus, FiPlus, FiTrash2, FiArrowRight } from 'react-icons/fi';
+import { FiShoppingBag, FiMinus, FiPlus, FiTrash2, FiArrowRight, FiPackage } from 'react-icons/fi';
+import { formatCustomizationDisplay } from '../services/cakeOptionsApi';
 
 const CartPage: React.FC = () => {
   const navigate = useNavigate();
@@ -93,9 +94,30 @@ const CartPage: React.FC = () => {
                       <h3 className="text-lg font-medium text-gray-900 mb-1">
                         {item.name || item.productId}
                       </h3>
-                      <div className="text-sm text-gray-500 mb-4">
+                      <div className="text-sm text-gray-500 mb-2">
                         SKU: {item.productId}
                       </div>
+                      
+                      {/* Custom Cake Customization Display */}
+                      {(item as any).isCustomCake && (item as any).customization && (
+                        <div className="mb-4 p-3 bg-purple-50 rounded-lg border border-purple-100">
+                          <div className="flex items-center gap-2 mb-2">
+                            <FiPackage className="w-4 h-4 text-purple-600" />
+                            <span className="text-xs font-semibold text-purple-700 uppercase">
+                              Bánh Tùy Chỉnh
+                            </span>
+                          </div>
+                          <div className="space-y-1">
+                            {formatCustomizationDisplay((item as any).customization).map(
+                              (line, idx) => (
+                                <p key={idx} className="text-xs text-gray-700">
+                                  • {line}
+                                </p>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      )}
                       
                       <div className="flex items-center justify-between">
                         <div className="flex items-center border border-gray-200 rounded-full">

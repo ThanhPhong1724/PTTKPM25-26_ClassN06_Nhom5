@@ -24,12 +24,25 @@ export const getCart = async (): Promise<CartApiResponse> => {
 };
 
 // Thêm item vào giỏ
-export const addItemToCart = async (productId: string, quantity: number): Promise<CartApiResponse> => {
+export const addItemToCart = async (
+  productIdOrPayload: string | { productId: string; quantity: number; customization?: any; isCustomCake?: boolean },
+  quantityOrToken?: number | string,
+): Promise<CartApiResponse> => {
   try {
-    const response = await apiClient.post<CartApiResponse>('/cart/items', { 
-      productId, 
-      quantity 
-    });
+    let payload: any;
+    
+    if (typeof productIdOrPayload === 'string') {
+      // Old signature: addItemToCart(productId, quantity)
+      payload = {
+        productId: productIdOrPayload,
+        quantity: quantityOrToken as number,
+      };
+    } else {
+      // New signature: addItemToCart(payload, token)
+      payload = productIdOrPayload;
+    }
+    
+    const response = await apiClient.post<CartApiResponse>('/cart/items', payload);
     return response.data;
   } catch (error) {
     console.error("Lỗi khi thêm vào giỏ hàng:", error);

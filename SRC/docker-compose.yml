@@ -115,7 +115,7 @@ services:
       DATABASE_USER: ${DB_UP_USER:-user_product_admin}
       DATABASE_PASSWORD: ${DB_UP_PASSWORD:-user_product_secret}
       DATABASE_NAME: ${DB_UP_NAME:-ecommerce_up_db}
-      JWT_SECRET: ${JWT_SECRET:-YourDefaultSecretKey}
+      JWT_SECRET: ${JWT_SECRET:-YourSuperSecretKeyChangeMeInProduction}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-3600s}
       RABBITMQ_URL: amqp://${RABBITMQ_USER:-rabbit_user}:${RABBITMQ_PASS:-rabbit_pass}@rabbitmq_queue:5672 # <<< Sử dụng user/pass từ env
       PORT: 3001
@@ -142,8 +142,8 @@ services:
     ports:
       - "3002:3002"
     environment:
-      JWT_SECRET: ${JWT_SECRET} # <<< THÊM
-      JWT_EXPIRATION: ${JWT_EXPIRATION} # <<< THÊM
+      JWT_SECRET: ${JWT_SECRET:-YourSuperSecretKeyChangeMeInProduction} # <<< FIX: Thêm default value
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-3600s} # <<< FIX: Thêm default value
       DATABASE_HOST: postgres_db_user_product # <<< Trỏ đến DB mới
       DATABASE_PORT: 5432
       DATABASE_USER: ${DB_UP_USER:-user_product_admin}
@@ -199,8 +199,8 @@ services:
     ports:
       - "3004:3004"
     environment:
-      JWT_SECRET: ${JWT_SECRET} # <<< THÊM
-      JWT_EXPIRATION: ${JWT_EXPIRATION} # <<< THÊM
+      JWT_SECRET: ${JWT_SECRET:-YourSuperSecretKeyChangeMeInProduction} # <<< FIX: Thêm default value
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-3600s} # <<< FIX: Thêm default value
       DATABASE_HOST: postgres_db_order_cart # <<< Trỏ đến DB mới
       DATABASE_PORT: 5432
       DATABASE_USER: ${DB_OC_USER:-order_cart_admin}

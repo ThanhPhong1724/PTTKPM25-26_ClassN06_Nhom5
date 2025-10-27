@@ -14,6 +14,7 @@ import {
   BellIcon,
   SearchIcon
 } from '@heroicons/react/outline';
+import { StarIcon } from '@heroicons/react/solid';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Logo = () => (
@@ -37,6 +38,7 @@ const AdminLayout: React.FC = () => {
     { path: '/admin/products', name: 'Quản lý Products', icon: ShoppingBagIcon },
     { path: '/admin/categories', name: 'Quản lý Danh mục', icon: TagIcon },
     { path: '/admin/orders', name: 'Quản lý Đơn hàng', icon: ClipboardListIcon },
+    { path: '/admin/reviews', name: 'Quản lý Đánh giá', icon: StarIcon },
   ];
 
   return (

@@ -1,0 +1,23 @@
+{
+  "productId": "00000000-0000-0000-0000-000000000001",
+  "quantity": 1,
+  "isCustomCake": true,
+  "customization": {
+    "size": {
+      "id": "test-id-1",
+      "name": "Nhỏ (15cm)",
+      "price": 0
+    },
+    "cakeBase": {
+      "id": "test-id-2",
+      "name": "Cốt Bông Lan",
+      "price": 0
+    },
+    "frosting": {
+      "id": "test-id-3",
+      "name": "Kem Tươi Truyền Thống",
+      "price": 0
+    }
+  }
+}
+

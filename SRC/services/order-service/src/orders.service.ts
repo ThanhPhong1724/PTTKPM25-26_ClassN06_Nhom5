@@ -154,12 +154,20 @@ export class OrdersService {
           throw new BadRequestException(`Sản phẩm "${product.name}" (ID: ${item.productId}) không đủ số lượng tồn kho (cần ${item.quantity}, còn ${product.stockQuantity}). Vui lòng cập nhật giỏ hàng.`);
         }
         // Nếu đủ hàng, chuẩn bị dữ liệu
-        totalAmount += product.price * item.quantity;
+        // For custom cakes, use price from cart item (already calculated from customization)
+        // For regular products, use product.price
+        const itemPrice = (item as any).isCustomCake ? ((item as any).price || 0) : product.price;
+        totalAmount += itemPrice * item.quantity;
+        
         orderItemsData.push({
           productId: item.productId,
           quantity: item.quantity,
-          price: product.price, // Lưu giá tại thời điểm đặt hàng
+          price: itemPrice, // Use calculated price for custom cakes
           productName: product.name || 'Unknown Product', // Xử lý trường hợp tên SP null
+          productImg: product.img || null, // Lưu ảnh sản phẩm để hiển thị sau này
+          // Include customization for custom cake orders
+          ...((item as any).customization && { customization: (item as any).customization }),
+          ...((item as any).isCustomCake !== undefined && { isCustomCake: (item as any).isCustomCake }),
         });
         productStockUpdates.push({ productId: item.productId, quantityChange: -item.quantity }); // quantityChange là số âm
 
@@ -185,6 +193,15 @@ export class OrdersService {
       newOrder.totalAmount = totalAmount;
       newOrder.status = OrderStatus.PENDING; // Trạng thái chờ xử lý
       newOrder.shippingAddress = createOrderDto.shippingAddress ?? 'Default Address'; // Cung cấp giá trị mặc định nếu không có
+      
+      // Delivery scheduling
+      if (createOrderDto.deliveryDate) {
+        newOrder.deliveryDate = new Date(createOrderDto.deliveryDate);
+      }
+      if (createOrderDto.deliveryTimeSlot) {
+        newOrder.deliveryTimeSlot = createOrderDto.deliveryTimeSlot;
+      }
+      
       newOrder.items = orderItemsData.map(itemData => {
           const newItem = new OrderItem();
           Object.assign(newItem, itemData);
@@ -277,6 +294,8 @@ export class OrdersService {
             name: i.productName // Thêm tên nếu cần
         })) || [],
         createdAt: savedOrder.createdAt,
+        deliveryDate: savedOrder.deliveryDate,
+        deliveryTimeSlot: savedOrder.deliveryTimeSlot,
         shippingAddress: savedOrder.shippingAddress,
       };
 
@@ -379,6 +398,17 @@ export class OrdersService {
       this.logger.error(`[updateOrderStatus] Failed to save order ${orderId} with new status: ${error.message}`, error.stack);
       throw error;
     }
+  }
+
+  /**
+   * Lấy order theo ID (dùng cho review verification)
+   */
+  async getOrderById(orderId: string): Promise<Order | null> {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['items']
+    });
+    return order;
   }
 
   // --- HÀM MỚI CHO ADMIN ---
@@ -627,11 +657,17 @@ export class OrdersService {
       .orderBy("DATE(order.createdAt AT TIME ZONE 'UTC')", "ASC") // SỬA Ở ĐÂY: Dùng lại biểu thức (hoặc có thể dùng "dateOnly" nếu chỉ ORDER BY)
       .getRawMany<{ dateOnly: string; dailyRevenue: string }>();
 
-    return revenueData.map(item => ({
-      date: item.dateOnly, // Đã là YYYY-MM-DD
-      name: format(parseISO(item.dateOnly), 'dd/MM'), // Format tên ngày dd/MM
-      revenue: parseFloat(item.dailyRevenue),
-    }));
+    return revenueData.map(item => {
+      // Database returns dateOnly as Date object (despite TypeScript typing as string)
+      // new Date() handles both string and Date input
+      const dateObj = new Date(item.dateOnly);
+      
+      return {
+        date: format(dateObj, 'yyyy-MM-dd'), // Format to YYYY-MM-DD
+        name: format(dateObj, 'dd/MM'), // Format tên ngày dd/MM
+        revenue: parseFloat(item.dailyRevenue),
+      };
+    });
   }
   // --- KẾT THÚC THỐNG KÊ CHO ADMIN ---
 };

@@ -39,6 +39,13 @@ export class Order {
   @Column({ nullable: true })
   shippingAddress: string;
 
+  // Delivery date and time slot
+  @Column({ type: 'date', nullable: true })
+  deliveryDate: Date;
+
+  @Column({ nullable: true })
+  deliveryTimeSlot: string; // e.g., "08:00-10:00", "10:00-12:00", etc.
+
   @CreateDateColumn()
   createdAt: Date;
 

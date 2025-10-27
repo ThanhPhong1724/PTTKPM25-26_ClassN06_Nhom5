@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getProductById, Product } from '../services/productApi';
+import { getProductReviews, getProductRatingStats, Review, RatingStats } from '../services/reviewApi';
 import { useCart } from '../contexts/CartContext';
-import { FiMinus, FiPlus, FiShoppingCart, FiHeart, FiShare2, FiTruck, FiShield, FiRepeat, FiTag } from 'react-icons/fi';
+import { useAuth } from '../contexts/AuthContext';
+import { FiMinus, FiPlus, FiShoppingCart, FiHeart, FiShare2, FiTruck, FiShield, FiRepeat, FiTag, FiStar } from 'react-icons/fi';
 
 // Cập nhật additionalInfo cho bánh ngọt
 const additionalInfo = {
@@ -30,12 +32,18 @@ const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { state: { user } } = useAuth();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState('description');
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [ratingStats, setRatingStats] = useState<RatingStats | null>(null);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const [totalReviews, setTotalReviews] = useState(0);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -43,6 +51,10 @@ const ProductDetailPage: React.FC = () => {
         if (!id) throw new Error('ID sản phẩm không hợp lệ');
         const data = await getProductById(id);
         setProduct(data);
+        
+        // Fetch rating stats
+        const stats = await getProductRatingStats(id);
+        setRatingStats(stats);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Có lỗi xảy ra');
       } finally {
@@ -52,6 +64,25 @@ const ProductDetailPage: React.FC = () => {
 
     fetchProduct();
   }, [id]);
+
+  const fetchReviews = async () => {
+    if (!id || activeTab !== 'reviews') return;
+    
+    setReviewsLoading(true);
+    try {
+      const data = await getProductReviews(id, reviewsPage, 5);
+      setReviews(data.reviews);
+      setTotalReviews(data.total);
+    } catch (err) {
+      console.error('Error fetching reviews:', err);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviews();
+  }, [id, activeTab, reviewsPage]);
 
   const handleAddToCart = async () => {
     try {
@@ -242,7 +273,8 @@ const ProductDetailPage: React.FC = () => {
                   {[
                     { id: 'description', label: 'Mô tả' },
                     { id: 'specifications', label: 'Thông số' },
-                    { id: 'shipping', label: 'Vận chuyển' }
+                    { id: 'shipping', label: 'Vận chuyển' },
+                    { id: 'reviews', label: `Đánh giá (${ratingStats?.totalReviews || 0})` }
                   ].map((tab) => (
                     <button
                       key={tab.id}
@@ -321,6 +353,185 @@ const ProductDetailPage: React.FC = () => {
                             <p className="text-gray-600">{info}</p>
                           </div>
                         ))}
+                      </div>
+                    )}
+
+                    {activeTab === 'reviews' && (
+                      <div>
+                        {/* Rating Summary */}
+                        {ratingStats && (
+                          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-8 mb-8">
+                            <div className="flex flex-col md:flex-row gap-8">
+                              {/* Average Rating */}
+                              <div className="flex-shrink-0 text-center">
+                                <div className="text-6xl font-bold text-purple-600 mb-2">
+                                  {ratingStats.averageRating.toFixed(1)}
+                                </div>
+                                <div className="flex items-center justify-center gap-1 mb-2">
+                                  {[1,2,3,4,5].map(star => (
+                                    <FiStar 
+                                      key={star}
+                                      className={`w-6 h-6 ${
+                                        star <= Math.round(ratingStats.averageRating) 
+                                          ? 'text-yellow-400 fill-yellow-400' 
+                                          : 'text-gray-300'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                                <p className="text-gray-600">
+                                  {ratingStats.totalReviews} đánh giá
+                                </p>
+                              </div>
+
+                              {/* Rating Distribution */}
+                              <div className="flex-1">
+                                {[5, 4, 3, 2, 1].map(rating => {
+                                  const count = ratingStats.ratingDistribution[rating as keyof typeof ratingStats.ratingDistribution];
+                                  const percentage = ratingStats.totalReviews > 0 
+                                    ? (count / ratingStats.totalReviews) * 100 
+                                    : 0;
+                                  
+                                  return (
+                                    <div key={rating} className="flex items-center gap-3 mb-2">
+                                      <span className="text-sm text-gray-600 w-8">{rating} ⭐</span>
+                                      <div className="flex-1 bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                        <motion.div
+                                          initial={{ width: 0 }}
+                                          animate={{ width: `${percentage}%` }}
+                                          className="bg-gradient-to-r from-yellow-400 to-orange-400 h-full"
+                                        />
+                                      </div>
+                                      <span className="text-sm text-gray-600 w-12 text-right">
+                                        {count}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Write Review Info */}
+                        {user && product && (
+                          <div className="mb-8 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border border-purple-100">
+                            <div className="flex items-start gap-4">
+                              <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                                <FiStar className="w-6 h-6 text-white" />
+                              </div>
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-gray-900 mb-2">Muốn viết đánh giá?</h3>
+                                <p className="text-gray-600 text-sm mb-3">
+                                  Để đảm bảo chất lượng đánh giá, bạn cần mua sản phẩm trước khi đánh giá.
+                                </p>
+                                <div className="flex flex-col sm:flex-row gap-3">
+                                  <button
+                                    onClick={() => {
+                                      if (!product) return;
+                                      navigate(`/orders`);
+                                    }}
+                                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-purple-500 text-purple-600 rounded-xl hover:bg-purple-50 transition-all duration-200 font-medium"
+                                  >
+                                    <span>Xem đơn hàng của tôi</span>
+                                  </button>
+                                  <p className="text-sm text-gray-500 self-center">
+                                    Đánh giá từ trang đơn hàng sau khi mua
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Reviews List */}
+                        {reviewsLoading ? (
+                          <div className="flex justify-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
+                          </div>
+                        ) : reviews.length > 0 ? (
+                          <div className="space-y-6">
+                            {reviews.map(review => (
+                              <motion.div 
+                                key={review.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="border border-gray-200 rounded-2xl p-6 hover:shadow-lg transition-shadow"
+                              >
+                                <div className="flex items-start justify-between mb-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
+                                      <span className="text-white font-medium text-lg">
+                                        {review.userName?.charAt(0) || 'U'}
+                                      </span>
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-gray-900">{review.userName || 'Người dùng'}</p>
+                                      <div className="flex items-center gap-1 mt-1">
+                                        {[1,2,3,4,5].map(star => (
+                                          <FiStar 
+                                            key={star}
+                                            className={`w-4 h-4 ${
+                                              star <= review.rating 
+                                                ? 'text-yellow-400 fill-yellow-400' 
+                                                : 'text-gray-300'
+                                            }`}
+                                          />
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <span className="text-sm text-gray-500">
+                                    {new Date(review.createdAt).toLocaleDateString('vi-VN')}
+                                  </span>
+                                </div>
+                                {review.comment && (
+                                  <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+                                )}
+                                {review.images && review.images.length > 0 && (
+                                  <div className="flex gap-2 mt-4">
+                                    {review.images.map((img, idx) => (
+                                      <img 
+                                        key={idx}
+                                        src={img}
+                                        alt={`Review ${idx + 1}`}
+                                        className="w-20 h-20 object-cover rounded-lg"
+                                      />
+                                    ))}
+                                  </div>
+                                )}
+                              </motion.div>
+                            ))}
+
+                            {/* Pagination */}
+                            {totalReviews > 5 && (
+                              <div className="flex justify-center gap-2 mt-8">
+                                <button
+                                  onClick={() => setReviewsPage(p => Math.max(1, p - 1))}
+                                  disabled={reviewsPage === 1}
+                                  className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50 hover:bg-gray-50"
+                                >
+                                  Trước
+                                </button>
+                                <span className="px-4 py-2 text-gray-600">
+                                  Trang {reviewsPage} / {Math.ceil(totalReviews / 5)}
+                                </span>
+                                <button
+                                  onClick={() => setReviewsPage(p => p + 1)}
+                                  disabled={reviewsPage >= Math.ceil(totalReviews / 5)}
+                                  className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50 hover:bg-gray-50"
+                                >
+                                  Sau
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-center py-12">
+                            <p className="text-gray-500 text-lg mb-2">Chưa có đánh giá nào</p>
+                            <p className="text-gray-400 text-sm">Hãy là người đầu tiên đánh giá sản phẩm này!</p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </motion.div>

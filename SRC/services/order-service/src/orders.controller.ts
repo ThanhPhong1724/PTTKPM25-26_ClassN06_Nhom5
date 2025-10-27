@@ -41,6 +41,39 @@ export class OrdersController {
     return { status: 'ok', service: 'orders-service' }; // Thêm tên service cho dễ nhận biết
   }
   // --- KẾT THÚC HEALTH CHECK ---
+
+  // --- VERIFY PRODUCT PURCHASE FOR REVIEWS ---
+  @Get(':orderId/verify-product')
+  async verifyProductPurchase(
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+    @Query('userId') userId: string,
+    @Query('productId') productId: string,
+  ) {
+    const order = await this.ordersService.getOrderById(orderId);
+    
+    // Kiểm tra order có tồn tại không
+    if (!order) {
+      return { isValid: false, status: null };
+    }
+
+    // Kiểm tra order có thuộc về user không
+    if (order.userId !== userId) {
+      return { isValid: false, status: null };
+    }
+
+    // Kiểm tra order có chứa productId không
+    const hasProduct = order.items.some(item => item.productId === productId);
+    if (!hasProduct) {
+      return { isValid: false, status: null };
+    }
+
+    // Trả về isValid và status của order
+    return { 
+      isValid: true, 
+      status: order.status.toLowerCase() // 'completed', 'processing', etc.
+    };
+  }
+  // --- END VERIFY PRODUCT PURCHASE ---
   
   // --- Helper Function (Giả định để lấy userId) ---
   private getUserIdFromRequest(req: any): string {

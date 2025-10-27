@@ -1,5 +1,5 @@
 // src/cart/dto/add-item.dto.ts
-import { IsInt, IsNotEmpty, IsPositive, IsUUID } from 'class-validator';
+import { IsInt, IsNotEmpty, IsPositive, IsUUID, IsOptional, IsBoolean } from 'class-validator';
 
 export class AddItemDto {
   @IsUUID()
@@ -9,4 +9,11 @@ export class AddItemDto {
   @IsInt()
   @IsPositive()
   quantity: number;
+
+  @IsOptional()
+  customization?: any; // Allow any structure for customization (validated by product service)
+
+  @IsOptional()
+  @IsBoolean()
+  isCustomCake?: boolean;
 }

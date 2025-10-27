@@ -22,6 +22,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   const logger = new Logger('OrderServiceMain');
+
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true, forbidNonWhitelisted: true, transform: true,
     transformOptions: { enableImplicitConversion: true }

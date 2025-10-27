@@ -77,6 +77,7 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import ProfilePage from './pages/ProfilePage';
 import AboutPage from './pages/AboutPage';
 import TermsPage from './pages/TermsPage';
+import CustomCakeBuilderPage from './pages/CustomCakeBuilderPage';
 
 // Admin Pages
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
@@ -87,6 +88,7 @@ import AdminCategoryListPage from './pages/admin/AdminCategoryListPage';
 import AdminCategoryFormPage from './pages/admin/AdminCategoryFormPage';
 import AdminOrderListPage from './pages/admin/AdminOrderListPage';
 import AdminOrderDetailPage from './pages/admin/AdminOrderDetailPage';
+import AdminReviewsPage from './pages/admin/AdminReviewsPage';
 // ... (các import trang admin khác)
 
 const NotFoundPage = () => <h1>404 Not Found</h1>;
@@ -114,6 +116,7 @@ const App: React.FC = () => {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/products" element={<ProductListPage />} />
           <Route path="/products/:id" element={<ProductDetailPage />} />
+          <Route path="/custom-cake-builder" element={<CustomCakeBuilderPage />} />
 
           <Route path="/cart" element={<PrivateRoute><CartPage /></PrivateRoute>} />
           <Route path="/checkout" element={<PrivateRoute><CheckoutPage /></PrivateRoute>} />
@@ -151,6 +154,7 @@ const App: React.FC = () => {
           <Route path="categories/edit/:categoryId" element={<AdminCategoryFormPage />} />
           <Route path="orders" element={<AdminOrderListPage />} />
           <Route path="orders/:orderId" element={<AdminOrderDetailPage />} />
+          <Route path="reviews" element={<AdminReviewsPage />} />
           <Route path="*" element={<NotFoundPage />} /> {/* 404 cho các route /admin/không_khớp */}
         </Route>
 

@@ -28,6 +28,7 @@ import {
   FiSave,
   FiX
 } from 'react-icons/fi';
+import { formatCustomizationDisplay } from '../../services/cakeOptionsApi';
 
 const getStatusColorAndIcon = (status: OrderStatusApi | string) => {
   switch (status) {
@@ -288,6 +289,41 @@ const AdminOrderDetailPage: React.FC = () => {
                 </div>
               </div>
             </motion.div>
+
+            {/* Delivery Schedule */}
+            {(order.deliveryDate || order.deliveryTimeSlot) && (
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl shadow-sm border-2 border-purple-200 p-6"
+              >
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <FiTruck className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900">Lịch giao hàng</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {order.deliveryDate && (
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 uppercase tracking-wider">Ngày giao hàng</label>
+                      <p className="mt-1 text-sm text-gray-900 font-medium flex items-center">
+                        <FiCalendar className="w-4 h-4 mr-2 text-purple-600" />
+                        {new Date(order.deliveryDate).toLocaleDateString('vi-VN')}
+                      </p>
+                    </div>
+                  )}
+                  {order.deliveryTimeSlot && (
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 uppercase tracking-wider">Khung giờ</label>
+                      <p className="mt-1 text-sm text-gray-900 font-medium flex items-center">
+                        <FiClock className="w-4 h-4 mr-2 text-purple-600" />
+                        {order.deliveryTimeSlot}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
           </div>
 
           {/* Products List */}
@@ -330,6 +366,25 @@ const AdminOrderDetailPage: React.FC = () => {
                           Đơn giá: <span className="font-medium">{item.price.toLocaleString('vi-VN')} VNĐ</span>
                         </span>
                       </div>
+                      
+                      {/* Custom Cake Customization Display */}
+                      {(item as any).isCustomCake && (item as any).customization && (
+                        <div className="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                          <p className="text-xs font-semibold text-purple-700 uppercase mb-2 flex items-center gap-1">
+                            <FiPackage className="w-3 h-3" />
+                            🎂 Bánh Tùy Chỉnh
+                          </p>
+                          <div className="space-y-1">
+                            {formatCustomizationDisplay((item as any).customization).map(
+                              (line, idx) => (
+                                <p key={idx} className="text-xs text-gray-700 font-medium">
+                                  • {line}
+                                </p>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-bold text-gray-900">

@@ -1,7 +1,7 @@
 # services/user-service/Dockerfile
 
 # Stage 1: Build stage (Chỉ để biên dịch TypeScript)
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 WORKDIR /usr/src/app
 COPY package*.json ./
 # Cài tất cả dependencies (bao gồm devDependencies) để chạy build
@@ -11,7 +11,7 @@ RUN npm run build
 # KHÔNG làm gì thêm với node_modules hay package*.json ở đây
 
 # Stage 2: Production stage (Chạy ứng dụng)
-FROM node:18-alpine
+FROM node:20-alpine
 # Trước dòng CMD hoặc ENTRYPOINT
 WORKDIR /usr/src/app
 

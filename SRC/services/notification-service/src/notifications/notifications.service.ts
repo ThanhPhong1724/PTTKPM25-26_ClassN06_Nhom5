@@ -12,6 +12,8 @@ interface OrderPayload {
   items: { productId: string; quantity: number; price: number; name: string }[];
   createdAt: string | Date;
   shippingAddress: string;
+  deliveryDate?: string | Date;
+  deliveryTimeSlot?: string;
 }
 
 interface PaymentPayload {
@@ -50,8 +52,17 @@ this.logger.log('!!! NotificationsService constructor CALLED !!!');
     bodyText += `Mã đơn hàng: ${payload.orderId}\n`;
     bodyText += `Ngày đặt: ${new Date(payload.createdAt).toLocaleString('vi-VN')}\n`;
     bodyText += `Tổng tiền: ${payload.totalAmount.toLocaleString('vi-VN')} VNĐ\n`;
-    bodyText += `Địa chỉ giao hàng: ${payload.shippingAddress}\n\n`;
-    bodyText += `Chi tiết sản phẩm:\n`;
+    bodyText += `Địa chỉ giao hàng: ${payload.shippingAddress}\n`;
+    
+    // Delivery scheduling info
+    if (payload.deliveryDate) {
+      bodyText += `Ngày giao hàng: ${new Date(payload.deliveryDate).toLocaleDateString('vi-VN')}\n`;
+    }
+    if (payload.deliveryTimeSlot) {
+      bodyText += `Khung giờ giao: ${payload.deliveryTimeSlot}\n`;
+    }
+    
+    bodyText += `\nChi tiết sản phẩm:\n`;
     payload.items.forEach(item => {
         bodyText += `- ${item.name} (x${item.quantity}) - ${ (item.price * item.quantity).toLocaleString('vi-VN')} VNĐ\n`;
     });

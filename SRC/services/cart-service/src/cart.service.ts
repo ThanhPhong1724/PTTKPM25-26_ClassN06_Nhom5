@@ -19,9 +19,16 @@ import { CartItem } from './cart/dto/cart-item.interface'; // <<< Sửa đườn
 import { AddItemDto } from './cart/dto/add-item.dto'; // <<< Sửa đường dẫn nếu cần
 import { Product } from './cart/interfaces/product.interface'; // <<< Import Product interface chung
 
+interface RedisCartItem {
+  productId: string;
+  quantity: number;
+  customization?: any;
+  isCustomCake?: boolean;
+}
+
 interface RedisCart {
   userId: string;
-  items: { productId: string; quantity: number }[];
+  items: RedisCartItem[];
 }
 
 @Injectable()
@@ -126,12 +133,28 @@ export class CartService implements OnModuleInit, OnModuleDestroy {
       .map((item, index) => {
         const details = productDetails[index];
         if (details) {
+          // Calculate price for custom cake orders
+          let finalPrice = details.price || 0;
+          if (item.isCustomCake && item.customization) {
+            // Sum up all customization option prices
+            finalPrice = 0;
+            const custom = item.customization;
+            if (custom.size?.price) finalPrice += Number(custom.size.price);
+            if (custom.cakeBase?.price) finalPrice += Number(custom.cakeBase.price);
+            if (custom.frosting?.price) finalPrice += Number(custom.frosting.price);
+            if (custom.flavor?.price) finalPrice += Number(custom.flavor.price);
+            if (custom.decoration?.price) finalPrice += Number(custom.decoration.price);
+          }
+
           return {
             productId: item.productId,
             quantity: item.quantity,
             name: details.name || 'Unknown Product', // Cung cấp giá trị mặc định
-            price: details.price || 0, // Cung cấp giá trị mặc định nếu price là undefined
+            price: finalPrice, // Use calculated price for custom cakes
             img: details.img || null, // Cung cấp giá trị mặc định nếu img là undefined
+            // Include customization and isCustomCake for custom cake orders
+            ...(item.customization && { customization: item.customization }),
+            ...(item.isCustomCake !== undefined && { isCustomCake: item.isCustomCake }),
           };
         }
         this.logger.warn(`Loại bỏ item ${item.productId} khỏi giỏ hàng user ${userId} vì không lấy được thông tin chi tiết.`);
@@ -166,7 +189,7 @@ async addItem(userId: string, addItemDto: AddItemDto): Promise<Cart> {
     } catch (e) { this.logger.error(`Lỗi parse giỏ hàng khi thêm item cho user ${userId}:`, e); }
   }
 
-  const { productId, quantity } = addItemDto;
+  const { productId, quantity, customization, isCustomCake } = addItemDto;
   const validQuantity = Math.max(1, quantity || 1);
 
   const productDetails = await this.getProductDetails(productId);
@@ -178,9 +201,21 @@ async addItem(userId: string, addItemDto: AddItemDto): Promise<Cart> {
 
   if (existingItemIndex > -1) {
     currentCart.items[existingItemIndex].quantity += validQuantity;
+    // Update customization if provided (for custom cakes)
+    if (customization) {
+      currentCart.items[existingItemIndex].customization = customization;
+    }
+    if (isCustomCake !== undefined) {
+      currentCart.items[existingItemIndex].isCustomCake = isCustomCake;
+    }
   } else {
-    // <<< Không còn lỗi 'never' ở đây >>>
-    currentCart.items.push({ productId, quantity: validQuantity });
+    // Add new item with customization
+    currentCart.items.push({ 
+      productId, 
+      quantity: validQuantity,
+      ...(customization && { customization }),
+      ...(isCustomCake !== undefined && { isCustomCake }),
+    });
   }
 
   await this.saveCart(currentCart);

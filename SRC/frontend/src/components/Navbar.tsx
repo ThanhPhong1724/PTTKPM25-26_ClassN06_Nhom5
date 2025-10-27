@@ -44,6 +44,10 @@ const Navbar: React.FC = () => {
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/" className="nav-link">Trang Chủ</Link>
             <Link to="/products" className="nav-link">Sản Phẩm</Link>
+            <Link to="/custom-cake-builder" className="nav-link flex items-center gap-1">
+              <span>🎂</span>
+              <span>Tạo Bánh Riêng</span>
+            </Link>
             <Link to="/about" className="nav-link">Giới Thiệu</Link>
             <Link to="/terms" className="nav-link">Điều Khoản</Link>
             
@@ -230,6 +234,10 @@ const Navbar: React.FC = () => {
                   </Link>
                   <Link to="/products" className="mobile-nav-link">
                     <span>Sản Phẩm</span>
+                  </Link>
+                  <Link to="/custom-cake-builder" className="mobile-nav-link">
+                    <span>🎂</span>
+                    <span>Tạo Bánh Riêng</span>
                   </Link>
                   <Link to="/about" className="mobile-nav-link">
                     <FiInfo className="w-5 h-5" />

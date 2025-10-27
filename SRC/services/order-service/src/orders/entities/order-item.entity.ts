@@ -19,6 +19,23 @@ export class OrderItem {
   @Column() // Tên sản phẩm tại thời điểm đặt hàng (tránh thay đổi sau này)
   productName: string;
 
+  @Column({ nullable: true }) // Ảnh sản phẩm tại thời điểm đặt hàng
+  productImg: string;
+
+  // Custom cake customization details
+  @Column({ type: 'jsonb', nullable: true })
+  customization?: {
+    size?: { id: string; name: string; price: number };
+    cakeBase?: { id: string; name: string; price: number };
+    frosting?: { id: string; name: string; price: number };
+    flavor?: { id: string; name: string; price: number };
+    decoration?: { id: string; name: string; price: number };
+    specialInstructions?: string;
+  };
+
+  @Column({ default: false })
+  isCustomCake: boolean;
+
   // Nhiều OrderItem thuộc về một Order
   @ManyToOne(() => Order, (order) => order.items, { onDelete: 'CASCADE' }) // Xóa items nếu order bị xóa
   @JoinColumn({ name: 'orderId' })

@@ -15,8 +15,11 @@ import {
   FiMapPin, 
   FiDollarSign,
   FiArrowLeft,
-  FiTruck
+  FiTruck,
+  FiStar
 } from 'react-icons/fi';
+import ReviewModal from '../components/ReviewModal';
+import { formatCustomizationDisplay } from '../services/cakeOptionsApi';
 
 // Helper function để format tiền tệ
 const formatCurrency = (amount: string | number): string => {
@@ -49,6 +52,13 @@ const OrderDetailPage: React.FC = () => {
   const [order, setOrder] = useState<OrderDetailType | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Review modal states
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [selectedProductForReview, setSelectedProductForReview] = useState<{
+    productId: string;
+    productName: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!orderId) {
@@ -73,6 +83,22 @@ const OrderDetailPage: React.FC = () => {
 
     fetchOrder();
   }, [orderId]);
+  
+  const handleOpenReviewModal = (productId: string, productName: string) => {
+    if (!orderId) return;
+    setSelectedProductForReview({ productId, productName });
+    setIsReviewModalOpen(true);
+  };
+  
+  const handleCloseReviewModal = () => {
+    setIsReviewModalOpen(false);
+    setSelectedProductForReview(null);
+  };
+  
+  const handleReviewSuccess = () => {
+    handleCloseReviewModal();
+    // Optionally refresh order to update review status
+  };
 
   if (loading) {
     return (
@@ -200,6 +226,45 @@ const OrderDetailPage: React.FC = () => {
           </div>
         </motion.div>
 
+        {/* Delivery Schedule Card */}
+        {(order.deliveryDate || order.deliveryTimeSlot) && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl shadow-sm p-6 mb-6 border border-purple-100"
+          >
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <FiTruck className="w-5 h-5 text-purple-600" />
+              Lịch giao hàng
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {order.deliveryDate && (
+                <div className="flex items-start gap-3">
+                  <FiCalendar className="w-5 h-5 text-purple-600 mt-1" />
+                  <div>
+                    <p className="text-sm text-gray-600">Ngày giao hàng</p>
+                    <p className="font-medium text-gray-900">
+                      {format(new Date(order.deliveryDate), 'dd/MM/yyyy', { locale: vi })}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {order.deliveryTimeSlot && (
+                <div className="flex items-start gap-3">
+                  <FiClock className="w-5 h-5 text-purple-600 mt-1" />
+                  <div>
+                    <p className="text-sm text-gray-600">Khung giờ giao</p>
+                    <p className="font-medium text-gray-900">
+                      {order.deliveryTimeSlot}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
         {/* Order Items Card */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -217,42 +282,76 @@ const OrderDetailPage: React.FC = () => {
             {order.items.map((item: OrderItem) => (
               <div 
                 key={item.id}
-                className="p-6 flex items-center justify-between border-b border-gray-100 last:border-b-0"
+                className="p-6 border-b border-gray-100 last:border-b-0"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
-                    {item.productImage ? (
-                      <img 
-                        src={item.productImage} 
-                        alt={item.productName}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <FiShoppingBag className="w-6 h-6 text-gray-400" />
-                      </div>
-                    )}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                      {item.productImg ? (
+                        <img 
+                          src={item.productImg} 
+                          alt={item.productName}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <FiShoppingBag className="w-6 h-6 text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <Link 
+                        to={`/products/${item.productId}`}
+                        className="font-medium text-gray-900 hover:text-purple-600 transition-colors"
+                      >
+                        {item.productName}
+                      </Link>
+                      <p className="text-sm text-gray-600">
+                        Số lượng: {item.quantity}
+                      </p>
+                      
+                      {/* Custom Cake Customization Display */}
+                      {(item as any).isCustomCake && (item as any).customization && (
+                        <div className="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-100">
+                          <p className="text-xs font-semibold text-purple-700 uppercase mb-2 flex items-center gap-1">
+                            <FiPackage className="w-3 h-3" />
+                            Bánh Tùy Chỉnh
+                          </p>
+                          <div className="space-y-1">
+                            {formatCustomizationDisplay((item as any).customization).map(
+                              (line, idx) => (
+                                <p key={idx} className="text-xs text-gray-700">
+                                  • {line}
+                                </p>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <Link 
-                      to={`/products/${item.productId}`}
-                      className="font-medium text-gray-900 hover:text-purple-600 transition-colors"
-                    >
-                      {item.productName}
-                    </Link>
+                  <div className="text-right">
+                    <p className="font-medium text-gray-900">
+                      {formatCurrency(parseFloat(item.price) * item.quantity)}
+                    </p>
                     <p className="text-sm text-gray-600">
-                      Số lượng: {item.quantity}
+                      {formatCurrency(item.price)} / sản phẩm
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-medium text-gray-900">
-                    {formatCurrency(parseFloat(item.price) * item.quantity)}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {formatCurrency(item.price)} / sản phẩm
-                  </p>
-                </div>
+                
+                {/* Review Button - Only show for completed orders */}
+                {order.status.toLowerCase() === 'completed' && (
+                  <div className="mt-4">
+                    <button
+                      onClick={() => handleOpenReviewModal(item.productId, item.productName)}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                    >
+                      <FiStar className="w-4 h-4" />
+                      <span className="text-sm font-medium">Viết đánh giá</span>
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -268,6 +367,18 @@ const OrderDetailPage: React.FC = () => {
           </div>
         </motion.div>
       </div>
+      
+      {/* Review Modal */}
+      {selectedProductForReview && orderId && (
+        <ReviewModal
+          isOpen={isReviewModalOpen}
+          onClose={handleCloseReviewModal}
+          productId={selectedProductForReview.productId}
+          productName={selectedProductForReview.productName}
+          orderId={orderId}
+          onSuccess={handleReviewSuccess}
+        />
+      )}
     </div>
   );
 };

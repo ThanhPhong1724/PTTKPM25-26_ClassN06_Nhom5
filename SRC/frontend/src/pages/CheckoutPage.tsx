@@ -18,7 +18,18 @@ interface OrderItem {
 interface CreateOrderPayload {
   shippingAddress: string;
   orderItems: OrderItem[]; // Changed from 'items' to 'orderItems'
+  deliveryDate?: string; // ISO date string (YYYY-MM-DD)
+  deliveryTimeSlot?: string;
 }
+
+const TIME_SLOTS = [
+  '08:00-10:00',
+  '10:00-12:00',
+  '12:00-14:00',
+  '14:00-16:00',
+  '16:00-18:00',
+  '18:00-20:00',
+] as const;
 
 const CheckoutPage: React.FC = () => {
   const { state: cartState } = useCart(); // Lấy state giỏ hàng và hàm clearCart
@@ -27,6 +38,8 @@ const CheckoutPage: React.FC = () => {
 
   // State cho thông tin giao hàng
   const [shippingAddress, setShippingAddress] = useState<string>('');
+  const [deliveryDate, setDeliveryDate] = useState<string>('');
+  const [deliveryTimeSlot, setDeliveryTimeSlot] = useState<string>('');
   // State cho loading và error
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +106,9 @@ const CheckoutPage: React.FC = () => {
 
       const orderPayload: CreateOrderPayload = {
         shippingAddress: shippingAddress.trim(),
-        orderItems: orderItems // Changed from 'items' to 'orderItems'
+        orderItems: orderItems, // Changed from 'items' to 'orderItems'
+        ...(deliveryDate && { deliveryDate }),
+        ...(deliveryTimeSlot && { deliveryTimeSlot }),
       };
 
       console.log('Sending order payload:', orderPayload);
@@ -162,6 +177,60 @@ const CheckoutPage: React.FC = () => {
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                   rows={3}
                 />
+              </div>
+
+              {/* Delivery Scheduling */}
+              <div className="bg-white rounded-2xl shadow-sm p-6">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                    <FiTruck className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Lịch giao hàng
+                    </h2>
+                    <p className="text-sm text-gray-600">
+                      Chọn ngày và giờ nhận hàng mong muốn (tùy chọn)
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Date Picker */}
+                  <div>
+                    <label htmlFor="deliveryDate" className="block text-sm font-medium text-gray-700 mb-2">
+                      Ngày giao hàng
+                    </label>
+                    <input
+                      type="date"
+                      id="deliveryDate"
+                      value={deliveryDate}
+                      onChange={(e) => setDeliveryDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+
+                  {/* Time Slot Selector */}
+                  <div>
+                    <label htmlFor="deliveryTimeSlot" className="block text-sm font-medium text-gray-700 mb-2">
+                      Khung giờ giao hàng
+                    </label>
+                    <select
+                      id="deliveryTimeSlot"
+                      value={deliveryTimeSlot}
+                      onChange={(e) => setDeliveryTimeSlot(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    >
+                      <option value="">Chọn khung giờ...</option>
+                      {TIME_SLOTS.map((slot) => (
+                        <option key={slot} value={slot}>
+                          {slot}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
 
               <div className="lg:hidden">

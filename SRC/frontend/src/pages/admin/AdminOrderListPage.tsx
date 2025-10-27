@@ -110,7 +110,7 @@ const AdminOrderListPage: React.FC = () => {
     processing: orders.filter(o => o.status === OrderStatusApi.PROCESSING).length,
     completed: orders.filter(o => o.status === OrderStatusApi.COMPLETED).length,
     totalRevenue: orders.filter(o => o.status === OrderStatusApi.COMPLETED)
-      .reduce((sum, o) => sum + o.totalAmount, 0)
+      .reduce((sum, o) => sum + Number(o.totalAmount), 0) // Parse as number to avoid string concatenation
   };
 
   if (loading) {

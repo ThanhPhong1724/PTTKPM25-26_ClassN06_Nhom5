@@ -18,6 +18,9 @@ export class OrderItemDto {
   @Expose()
   productName: string; // Tên sản phẩm tại thời điểm mua
 
+  @Expose()
+  productImg: string; // Ảnh sản phẩm tại thời điểm mua
+
   // Không expose orderId và order object để tránh vòng lặp và dư thừa dữ liệu
   // @Exclude() // Không cần nếu đã dùng @Exclude() ở trên class
   // orderId: string;
